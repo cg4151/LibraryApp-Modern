@@ -1,0 +1,38 @@
+version: '3.8'
+
+services:
+  koha:
+    image: koha/koha:latest
+    ports:
+      - "8081:8081"
+    environment:
+      KOHA_INSTANCE: library
+      KOHA_ADMIN_PASS: admin123
+    volumes:
+      - koha_data:/var/lib/koha
+
+  mysql:
+    image: mysql:8.0
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: root123
+      MYSQL_DATABASE: koha_library
+    volumes:
+      - mysql_data:/var/lib/mysql
+
+  library-app:
+    build: .
+    ports:
+      - "5000:5000"
+    depends_on:
+      - koha
+      - mysql
+    environment:
+      - ASPNETCORE_URLS=http://+:5000
+      - Koha__BaseUrl=http://koha:8081
+      - RFID__ReaderIp=192.168.1.100
+
+volumes:
+  koha_data:
+  mysql_data:
